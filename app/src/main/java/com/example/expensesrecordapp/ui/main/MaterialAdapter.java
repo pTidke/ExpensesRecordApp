@@ -1,0 +1,87 @@
+package com.example.expensesrecordapp.ui.main;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.expensesrecordapp.R;
+import com.example.expensesrecordapp.model.Material;
+
+import java.util.List;
+
+public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.ViewHolder> {
+    private List<Material> mList;
+
+    public MaterialAdapter(List<Material> mList) {
+        this.mList = mList;
+    }
+
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+        View listItem= layoutInflater.inflate(R.layout.material_item, parent, false);
+        return new ViewHolder(listItem);
+    }
+
+    @Override
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        final Material data = mList.get(position);
+        holder.nameCardMaterial.setText(toTitleCase(data.getNameMaterial().toUpperCase()));
+        holder.nameCardMaterialSupplier.setText("Supplier : " + data.getNameSupplier());
+        holder.nameCardDate.setText("Date : " + data.getDate());
+        holder.nameCardQuantity.setText("Quantity : " + Integer.toString(data.getQuantity()));
+        holder.nameCardTotal.setText("Total Price : " + Float.toString(data.getCostTotal()));
+    }
+
+    @Override
+    public int getItemCount() {
+        return mList.size();
+    }
+
+    public static String toTitleCase(String str) {
+
+        if (str == null) {
+            return null;
+        }
+
+        boolean space = true;
+        StringBuilder builder = new StringBuilder(str);
+        final int len = builder.length();
+
+        for (int i = 0; i < len; ++i) {
+            char c = builder.charAt(i);
+            if (space) {
+                if (!Character.isWhitespace(c)) {
+                    // Convert to title case and switch out of whitespace mode.
+                    builder.setCharAt(i, Character.toTitleCase(c));
+                    space = false;
+                }
+            } else if (Character.isWhitespace(c)) {
+                space = true;
+            } else {
+                builder.setCharAt(i, Character.toLowerCase(c));
+            }
+        }
+
+        return builder.toString();
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        public TextView nameCardMaterial;
+        public TextView nameCardMaterialSupplier;
+        public TextView nameCardDate;
+        public TextView nameCardQuantity;
+        public TextView nameCardTotal;
+        public ViewHolder(View itemView) {
+            super(itemView);
+            nameCardDate = itemView.findViewById(R.id.nameCardDate);
+            nameCardMaterial = itemView.findViewById(R.id.nameCardMaterial);
+            nameCardMaterialSupplier = itemView.findViewById(R.id.nameCardMaterialSupplier);
+            nameCardQuantity = itemView.findViewById(R.id.nameCardQuantity);
+            nameCardTotal = itemView.findViewById(R.id.nameCardTotal);
+        }
+    }
+}
