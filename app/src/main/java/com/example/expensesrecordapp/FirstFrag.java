@@ -40,8 +40,8 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
 
     private static final String TAG = "Expenses";
     private MaterialButton datePicker, btnAddMaterial, btnSaveWorkData;
-    private TextInputEditText nameMaterial, nameSupplier, quantity, price, totalMaterials;
-    private AutoCompleteTextView nameWork;
+    private TextInputEditText nameMaterial,quantity, price, totalMaterials;
+    private AutoCompleteTextView  nameSupplier, nameWork;
     private TextView totalPrice;
     private NestedScrollView nestedScrollView;
     private LinearLayout linerLayout1, linerLayout2, linerLayout3;
@@ -56,6 +56,7 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
 
     List<Material> materialsList = new ArrayList<>();
     public List<String> allWorks = new ArrayList<>();
+    public static List<String> allSuppliers = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -147,8 +148,7 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
     }
 
     public void makeWorksList(){
-        works
-            .get()
+        works.get()
             .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -161,6 +161,25 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
                     }
                 }
             });
+
+        works.get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Work w = document.toObject(Work.class);
+                                List<Material> m = w.getMaterials();
+                                for (Material material : m){
+                                    if(!allSuppliers.contains(material.getNameSupplier()))
+                                        allSuppliers.add(material.getNameSupplier());
+                                }
+                            }
+                        } else {
+                            Log.d(TAG, "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
     }
 
     @Override
@@ -188,8 +207,11 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
         ti4 = nestedScrollView.findViewById(R.id.ti4);
         ti5 = nestedScrollView.findViewById(R.id.ti5);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(nestedScrollView.getContext(), android.R.layout.simple_list_item_1, allWorks);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(nestedScrollView.getContext(), android.R.layout.simple_dropdown_item_1line, allWorks);
         nameWork.setAdapter(adapter);
+
+        ArrayAdapter<String> adapter2 = new ArrayAdapter<String>(nestedScrollView.getContext(), android.R.layout.simple_dropdown_item_1line, allSuppliers);
+        nameSupplier.setAdapter(adapter2);
 
         btnAddMaterial.setOnClickListener(this);
         datePicker.setOnClickListener(this);

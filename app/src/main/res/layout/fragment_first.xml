@@ -75,10 +75,11 @@
             android:layout_marginTop="@dimen/dimen_common"
             android:id="@+id/ti3">
 
-            <com.google.android.material.textfield.TextInputEditText
+            <AutoCompleteTextView
                 android:id="@+id/nameSupplier"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="60sp"
+                android:paddingStart="12dp"
                 android:hint="Name of Supplier"
                 android:inputType="text"
                 android:lines="1"
