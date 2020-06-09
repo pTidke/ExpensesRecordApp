@@ -6,6 +6,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,24 +25,23 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class FirstFrag extends Fragment implements View.OnClickListener {
 
     private static final String TAG = "Expenses";
     private MaterialButton datePicker, btnAddMaterial, btnSaveWorkData;
-    private TextInputEditText nameWork, nameMaterial, nameSupplier, quantity, price, totalMaterials;
+    private TextInputEditText nameMaterial, nameSupplier, quantity, price, totalMaterials;
+    private AutoCompleteTextView nameWork;
     private TextView totalPrice;
     private NestedScrollView nestedScrollView;
     private LinearLayout linerLayout1, linerLayout2, linerLayout3;
@@ -54,11 +55,13 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
     private CollectionReference works = db.collection("Works");
 
     List<Material> materialsList = new ArrayList<>();
+    public List<String> allWorks = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         nestedScrollView = (NestedScrollView) inflater.inflate(R.layout.fragment_first, container, false);
         initViews();
+        makeWorksList();
         return  nestedScrollView;
     }
 
@@ -143,6 +146,23 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
 
     }
 
+    public void makeWorksList(){
+        works
+            .get()
+            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            allWorks.add(document.getId());
+                        }
+                    } else {
+                        Log.d(TAG, "Error getting documents: ", task.getException());
+                    }
+                }
+            });
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -167,6 +187,9 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
         ti3 = nestedScrollView.findViewById(R.id.ti3);
         ti4 = nestedScrollView.findViewById(R.id.ti4);
         ti5 = nestedScrollView.findViewById(R.id.ti5);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(nestedScrollView.getContext(), android.R.layout.simple_list_item_1, allWorks);
+        nameWork.setAdapter(adapter);
 
         btnAddMaterial.setOnClickListener(this);
         datePicker.setOnClickListener(this);
