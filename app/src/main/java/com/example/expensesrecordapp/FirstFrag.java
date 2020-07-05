@@ -54,7 +54,7 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference works = db.collection("Works");
 
-    List<Material> materialsList = new ArrayList<>();
+    public static List<Material> materialsList = new ArrayList<>();
     public List<String> allWorks = new ArrayList<>();
     public static List<String> allSuppliers = new ArrayList<>();
 
