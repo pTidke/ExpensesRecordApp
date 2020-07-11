@@ -1,11 +1,13 @@
 package com.example.expensesrecordapp;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.LinearLayout;
@@ -129,6 +131,7 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
                 datePicker.setText("Enter Date");
 
                 Toast.makeText( nestedScrollView.getContext(), "Material Added Successfully", Toast.LENGTH_SHORT ).show();
+                hideKeyboard( view );
 
             }
             catch (Exception e){
@@ -150,6 +153,7 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
                 nameWork.setText("");
                 materialsList.clear();
                 Toast.makeText( nestedScrollView.getContext(), "Work Added Successfully", Toast.LENGTH_SHORT ).show();
+                hideKeyboard( view );
             }
             catch (Exception e){
                 Toast.makeText(view.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -234,6 +238,11 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
         btnAddMaterial.setOnClickListener(this);
         datePicker.setOnClickListener(this);
         btnSaveWorkData.setOnClickListener(this);
+    }
+
+    private void hideKeyboard(View v) {
+        InputMethodManager inputMethodManager = (InputMethodManager)getActivity().getSystemService( Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(v.getApplicationWindowToken(),0);
     }
 
 }

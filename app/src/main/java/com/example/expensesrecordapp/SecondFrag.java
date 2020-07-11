@@ -1,5 +1,6 @@
 package com.example.expensesrecordapp;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -11,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -117,6 +119,11 @@ public class SecondFrag extends Fragment {
         }
 
         return builder.toString();
+    }
+
+    private void hideKeyboard(View v) {
+        InputMethodManager inputMethodManager = (InputMethodManager)getActivity().getSystemService( Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(v.getApplicationWindowToken(),0);
     }
 
     @Override

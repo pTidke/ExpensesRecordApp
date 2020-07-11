@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -36,6 +37,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.content.Context.INPUT_METHOD_SERVICE;
+import static androidx.core.content.ContextCompat.getSystemService;
 import static com.example.expensesrecordapp.R.layout.list_view;
 
 public class ThirdFrag extends Fragment {
@@ -85,6 +88,7 @@ public class ThirdFrag extends Fragment {
                                 editor.putFloat( nameS, Float.valueOf( paidAmount.getText().toString() ) );
                                 editor.commit();
                                 Toast.makeText( dialogView.getContext(), "Payment Updated", Toast.LENGTH_SHORT ).show();
+                                hideKeyboard( v );
                             }
                             else {
                                 Toast.makeText( dialogView.getContext(), "Enter amount higher than 0!", Toast.LENGTH_SHORT ).show();
@@ -205,6 +209,11 @@ public class ThirdFrag extends Fragment {
         }
 
         return builder.toString();
+    }
+
+    private void hideKeyboard(View v) {
+        InputMethodManager inputMethodManager = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(v.getApplicationWindowToken(),0);
     }
 
     @Override
