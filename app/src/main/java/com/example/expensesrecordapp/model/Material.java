@@ -10,6 +10,17 @@ public class Material{
     private String nameSupplier;
     private String date;
     private float costTotal;
+    private String description;
+
+    public Material(String nameMaterial, int quantity, float price, String nameSupplier, String date, float costTotal, String description) {
+        this.nameMaterial = nameMaterial;
+        this.quantity = quantity;
+        this.price = price;
+        this.nameSupplier = nameSupplier;
+        this.date = date;
+        this.costTotal = costTotal;
+        this.description = description;
+    }
 
     public Material() {
     }
@@ -21,6 +32,10 @@ public class Material{
         this.nameSupplier = nameSupplier;
         this.date = date;
         this.costTotal = costTotal;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public String getNameMaterial() {

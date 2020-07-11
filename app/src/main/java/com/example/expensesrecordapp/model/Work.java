@@ -17,10 +17,10 @@ public class Work {
     }
 
     public float getGrandTotal(){
-        Iterator<Material> crunchifyIterator = materials.iterator();
+        Iterator<Material> crunchyIterator = materials.iterator();
         float sum = 0;
-        while (crunchifyIterator.hasNext()) {
-            sum += crunchifyIterator.next().getCostTotal();
+        while (crunchyIterator.hasNext()) {
+            sum += crunchyIterator.next().getCostTotal();
         }
         return sum;
     }

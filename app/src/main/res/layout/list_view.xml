@@ -7,4 +7,5 @@
     android:layout_height="fill_parent"
     android:padding="10sp"
     android:textAllCaps="true"
-    android:textSize="20sp"></TextView>
+    android:textColor="@color/black"
+    android:textSize="18sp"/>

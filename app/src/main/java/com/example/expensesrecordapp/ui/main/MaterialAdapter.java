@@ -34,6 +34,9 @@ public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.ViewHo
         holder.nameCardDate.setText("Date : " + data.getDate());
         holder.nameCardQuantity.setText("Quantity : " + Integer.toString(data.getQuantity()));
         holder.nameCardTotal.setText("Total Price : " + Float.toString(data.getCostTotal()));
+        if (!data.getDescription().isEmpty()){
+            holder.getNameCardMaterialDescription.setText( "Description : " + data.getDescription() );
+        }
     }
 
     @Override
@@ -75,6 +78,7 @@ public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.ViewHo
         public TextView nameCardDate;
         public TextView nameCardQuantity;
         public TextView nameCardTotal;
+        public TextView getNameCardMaterialDescription;
         public ViewHolder(View itemView) {
             super(itemView);
             nameCardDate = itemView.findViewById(R.id.nameCardDate);
@@ -82,6 +86,7 @@ public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.ViewHo
             nameCardMaterialSupplier = itemView.findViewById(R.id.nameCardMaterialSupplier);
             nameCardQuantity = itemView.findViewById(R.id.nameCardQuantity);
             nameCardTotal = itemView.findViewById(R.id.nameCardTotal);
+            getNameCardMaterialDescription = itemView.findViewById( R.id.nameCardMaterialDescription );
         }
     }
 }

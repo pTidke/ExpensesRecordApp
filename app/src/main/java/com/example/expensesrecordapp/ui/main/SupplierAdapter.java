@@ -34,6 +34,9 @@ public class SupplierAdapter extends RecyclerView.Adapter<SupplierAdapter.Suppli
         supplierHolder.nameCardDate.setText("Date : " + material.getDate());
         supplierHolder.nameCardQuantity.setText("Quantity : " + Integer.toString(material.getQuantity()));
         supplierHolder.nameCardTotal.setText("Total Price : " + Float.toString(material.getCostTotal()));
+        if (!material.getDescription().isEmpty()){
+            supplierHolder.nameCardDesc.setText("Description : "  + material.getDescription());
+        }
     }
 
     @Override
@@ -48,13 +51,16 @@ public class SupplierAdapter extends RecyclerView.Adapter<SupplierAdapter.Suppli
         public TextView nameCardDate;
         public TextView nameCardQuantity;
         public TextView nameCardTotal;
+        public TextView nameCardDesc;
 
         public SupplierHolder(View itemView) {
             super(itemView);
             nameCardDate = itemView.findViewById(R.id.nameCardDate1);
             nameCardMaterial = itemView.findViewById(R.id.nameCardMaterial1);
             nameCardQuantity = itemView.findViewById(R.id.nameCardQuantity1);
-            nameCardTotal = itemView.findViewById(R.id.nameCardTotal1);        }
+            nameCardTotal = itemView.findViewById(R.id.nameCardTotal1);
+            nameCardDesc = itemView.findViewById( R.id.nameCardDesc1 );
+        }
     }
 
     public static String toTitleCase(String str) {

@@ -40,15 +40,14 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
 
     private static final String TAG = "Expenses";
     private MaterialButton datePicker, btnAddMaterial, btnSaveWorkData;
-    private TextInputEditText nameMaterial,quantity, price, totalMaterials;
+    private TextInputEditText nameMaterial, quantity, price, description;
     private AutoCompleteTextView  nameSupplier, nameWork;
-    private TextView totalPrice;
     private NestedScrollView nestedScrollView;
-    private LinearLayout linerLayout1, linerLayout2, linerLayout3;
-    private TextInputLayout ti1, ti2, ti3, ti4, ti5;
+    // private LinearLayout linerLayout1, linerLayout2, linerLayout3;
+    // private TextInputLayout ti1, ti2, ti3, ti4, ti5;
     private Calendar calendar;
-    private String mWork, mMaterial, mSupplier, date;
-    private int materialTotal, materialQuantity;
+    private String mWork, mMaterial, mSupplier, date, mDescription;
+    private int materialQuantity;
     private float materialPrice;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -94,9 +93,17 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
                 mSupplier = nameSupplier.getText().toString().toLowerCase();
                 materialQuantity = Integer.parseInt(quantity.getText().toString());
                 materialPrice = Float.parseFloat(price.getText().toString());
+                mDescription = description.getText().toString();
                 String date = datePicker.getText().toString();
+                Material m;
 
-                Material m = new Material(mMaterial, materialQuantity, materialPrice, mSupplier, date, materialPrice * materialQuantity);
+                if (!mDescription.isEmpty()){
+                    m = new Material(mMaterial, materialQuantity, materialPrice, mSupplier, date, materialPrice * materialQuantity, mDescription);
+                }
+
+                else {
+                    m = new Material(mMaterial, materialQuantity, materialPrice, mSupplier, date, materialPrice * materialQuantity, "");
+                }
 
                 works.document(mWork).get().addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -118,7 +125,11 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
                 nameSupplier.setText("");
                 quantity.setText("");
                 price.setText("");
+                description.setText("");
                 datePicker.setText("Enter Date");
+
+                Toast.makeText( nestedScrollView.getContext(), "Material Added Successfully", Toast.LENGTH_SHORT ).show();
+
             }
             catch (Exception e){
                 Toast.makeText(view.getContext(), "Enter Data Properly", Toast.LENGTH_SHORT).show();
@@ -138,6 +149,7 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
 
                 nameWork.setText("");
                 materialsList.clear();
+                Toast.makeText( nestedScrollView.getContext(), "Work Added Successfully", Toast.LENGTH_SHORT ).show();
             }
             catch (Exception e){
                 Toast.makeText(view.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -195,17 +207,23 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
         nameMaterial = nestedScrollView.findViewById(R.id.nameMaterial);
         nameSupplier = nestedScrollView.findViewById(R.id.nameSupplier);
         quantity = nestedScrollView.findViewById(R.id.quantity);
+        description = nestedScrollView.findViewById( R.id.description );
         price = nestedScrollView.findViewById(R.id.price);
         nestedScrollView = nestedScrollView.findViewById(R.id.nestedScrollView);
+
+        /*
         linerLayout1 = nestedScrollView.findViewById(R.id.linerLayout);
         linerLayout2 = nestedScrollView.findViewById(R.id.linerLayout2);
         linerLayout3 = nestedScrollView.findViewById(R.id.linerLayout3);
+        */
 
+        /*
         ti1 = nestedScrollView.findViewById(R.id.ti1);
         ti2 = nestedScrollView.findViewById(R.id.ti2);
         ti3 = nestedScrollView.findViewById(R.id.ti3);
         ti4 = nestedScrollView.findViewById(R.id.ti4);
         ti5 = nestedScrollView.findViewById(R.id.ti5);
+        */
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(nestedScrollView.getContext(), android.R.layout.simple_dropdown_item_1line, allWorks);
         nameWork.setAdapter(adapter);

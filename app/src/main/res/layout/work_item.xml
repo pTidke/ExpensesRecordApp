@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cardViewWork"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="6dp"
+    app:strokeColor="@color/gray"
+    app:strokeWidth="1dp"
     android:foreground="?attr/selectableItemBackground">
 
     <RelativeLayout
@@ -11,19 +14,11 @@
         android:layout_height="match_parent"
         android:padding="@dimen/dimen_common_small">
 
-        <RelativeLayout
-            android:id="@+id/icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/dimen_common"
-            android:background="@drawable/money_back" />
 
         <TextView
             android:id="@+id/nameCardWork"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/icon"
             android:inputType="text|textCapSentences|textNoSuggestions"
             android:text="Name of Work"
             android:textAllCaps="true"
@@ -36,9 +31,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/nameCardWork"
             android:layout_marginTop="2dp"
-            android:layout_toEndOf="@id/icon"
             android:inputType="textNoSuggestions"
-            android:text="Date of creation goes here"
+            android:text="Number of items"
             android:textSize="16sp"/>
 
 

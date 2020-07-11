@@ -21,12 +21,21 @@
             android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
             android:textSize="20sp" />
 
+        <TextView
+            android:id="@+id/nameCardDesc1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/nameCardMaterial1"
+            android:layout_marginTop="2dp"
+            android:inputType="textNoSuggestions"
+            android:text="Description : None"
+            android:textSize="16sp"/>
 
         <TextView
             android:id="@+id/nameCardDate1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/nameCardMaterial1"
+            android:layout_below="@id/nameCardDesc1"
             android:layout_marginTop="2dp"
             android:inputType="textNoSuggestions"
             android:text="Date of purchase"

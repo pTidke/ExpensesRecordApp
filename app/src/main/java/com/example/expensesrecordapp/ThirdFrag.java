@@ -38,17 +38,18 @@ public class ThirdFrag extends Fragment {
 
     private List<Material> materialsList = new ArrayList<>();
     private SupplierAdapter adapter1;
+    private List<String> lv = new ArrayList<>();
+    private CollectionReference works = db.collection("Works");
+    ListView lvSuppliers;
 
     View view;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_third, container, false);
-        ListView lvSuppliers = view.findViewById( R.id.LvSuppliers );
-        List<String> lv = FirstFrag.allSuppliers;
-        ArrayAdapter arrayAdapter = new ArrayAdapter<>( getContext(), list_view, lv );
-        lvSuppliers.setClickable( false );
-        lvSuppliers.setAdapter( arrayAdapter );
+        lvSuppliers = view.findViewById( R.id.LvSuppliers );
+        setList();
 
         lvSuppliers.setOnItemClickListener( new AdapterView.OnItemClickListener() {
             @Override
@@ -100,6 +101,47 @@ public class ThirdFrag extends Fragment {
         return view;
     }
 
+    private void setList() {
+
+        works.get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Work w = document.toObject(Work.class);
+                                List<Material> m = w.getMaterials();
+                                for (Material material : m){
+                                    if(!lv.contains(material.getNameSupplier()))
+                                        lv.add(material.getNameSupplier());
+                                }
+                            }
+                        } else {
+                            Log.d("TAG", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>( getContext(), list_view, lv ){
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent){
+                /// Get the Item from ListView
+                View view = super.getView(position, convertView, parent);
+
+                // Set the border of View (ListView Item)
+                view.setBackground(getContext().getDrawable(R.drawable.border));
+
+                // Return the view
+                return view;
+            }
+
+        };
+        arrayAdapter.notifyDataSetChanged();
+        lvSuppliers.setClickable( false );
+        lvSuppliers.setAdapter( arrayAdapter );
+
+    }
+
     public static String toTitleCase(String str) {
 
         if (str == null) {
@@ -126,6 +168,12 @@ public class ThirdFrag extends Fragment {
         }
 
         return builder.toString();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setList();
     }
 
 }
