@@ -1,10 +1,13 @@
 package com.example.expensesrecordapp;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -28,6 +31,7 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -74,18 +78,34 @@ public class SecondFrag extends Fragment {
 
         adapter.setOnItemClickListener((documentSnapshot, position) -> {
             Work work = documentSnapshot.toObject(Work.class);
-            List<Material> mList = work.getMaterials();
+            List<Material> mList = null;
+            if (work != null) {
+                mList = work.getMaterials();
+            }
             BottomSheetDialog mBottomSheetDialog = new BottomSheetDialog(getContext());
             View dialogView = getActivity().getLayoutInflater().inflate(R.layout.dialog_bottom_sheet, null);
             TextView tv = dialogView.findViewById(R.id.tv);
+            MaterialButton delete = dialogView.findViewById( R.id.deleteMaterial );
             tv.setText(toTitleCase(work.getNameWork()));
             TextView gt = dialogView.findViewById(R.id.grandTotal);
             gt.setText("Grand Total : " + Float.toString(work.getGrandTotal()));
             RecyclerView listView = dialogView.findViewById(R.id.list);
-            MaterialAdapter adapter = new MaterialAdapter(mList);
+            MaterialAdapter materialAdapter = new MaterialAdapter(mList);
             listView.setHasFixedSize(true);
             listView.setLayoutManager(new LinearLayoutManager(mBottomSheetDialog.getContext()));
-            listView.setAdapter(adapter);
+            listView.setAdapter(materialAdapter);
+
+            delete.setOnClickListener( v -> {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
+                builder.setMessage("Do you want to Delete this Work ?").setTitle("Delete Alert!")
+                        .setCancelable(false)
+                        .setPositiveButton("Yes", (dialog, id) -> adapter.DeleteItem( position ) )
+                        .setNegativeButton("No", (dialog, id) -> dialog.cancel() );
+
+                AlertDialog alert = builder.create();
+                alert.show();
+            } );
 
             mBottomSheetDialog.setContentView(dialogView);
             mBottomSheetDialog.show();
@@ -119,11 +139,6 @@ public class SecondFrag extends Fragment {
         }
 
         return builder.toString();
-    }
-
-    private void hideKeyboard(View v) {
-        InputMethodManager inputMethodManager = (InputMethodManager)getActivity().getSystemService( Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(v.getApplicationWindowToken(),0);
     }
 
     @Override

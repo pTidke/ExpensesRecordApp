@@ -35,6 +35,10 @@ public class WorkAdapter extends FirestoreRecyclerAdapter<Work, WorkAdapter.Work
         return new WorkHolder(v);
     }
 
+    public void DeleteItem(int position){
+        getSnapshots().getSnapshot( position ).getReference().delete();
+    }
+
     class WorkHolder extends RecyclerView.ViewHolder{
 
         TextView nameWork;
