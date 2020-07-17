@@ -10,54 +10,46 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 
 import com.example.expensesrecordapp.model.Material;
 import com.example.expensesrecordapp.model.Work;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class FirstFrag extends Fragment implements View.OnClickListener {
 
     private static final String TAG = "Expenses";
-    private MaterialButton datePicker, btnAddMaterial, btnSaveWorkData;
+
+    private MaterialButton datePicker;
     private TextInputEditText nameMaterial, quantity, price, description;
     private AutoCompleteTextView  nameSupplier, nameWork;
     private NestedScrollView nestedScrollView;
-    // private LinearLayout linerLayout1, linerLayout2, linerLayout3;
-    // private TextInputLayout ti1, ti2, ti3, ti4, ti5;
     private Calendar calendar;
-    private String mWork, mMaterial, mSupplier, date, mDescription;
-    private int materialQuantity;
-    private float materialPrice;
+    private String date;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference works = db.collection("Works");
     private CollectionReference payments = db.collection( "payments" );
 
     public static List<Material> materialsList = new ArrayList<>();
-    public List<String> allWorks = new ArrayList<>();
+    public static List<String> allWorks = new ArrayList<>();
     public static List<String> allSuppliers = new ArrayList<>();
 
     @Override
@@ -88,31 +80,42 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
             datePickerDialog.show();
         }
 
+        String mWork;
         if(view.getId() == R.id.btnAddMaterial) {
 
             try {
                 mWork = nameWork.getText().toString().toLowerCase();
-                mMaterial = nameMaterial.getText().toString().toLowerCase();
-                mSupplier = nameSupplier.getText().toString().toLowerCase();
-                materialQuantity = Integer.parseInt(quantity.getText().toString());
-                materialPrice = Float.parseFloat(price.getText().toString());
-                mDescription = description.getText().toString();
+                String mMaterial = Objects.requireNonNull( nameMaterial.getText() ).toString().toLowerCase();
+                String mSupplier = nameSupplier.getText().toString().toLowerCase();
+                int materialQuantity = Integer.parseInt( Objects.requireNonNull( quantity.getText() ).toString() );
+                float materialPrice = Float.parseFloat( Objects.requireNonNull( price.getText() ).toString() );
+                String mDescription = Objects.requireNonNull( description.getText() ).toString();
                 String date = datePicker.getText().toString();
                 Material m;
 
                 if (!mDescription.isEmpty()){
-                    m = new Material(mMaterial, materialQuantity, materialPrice, mSupplier, date, materialPrice * materialQuantity, mDescription);
+                    m = new Material( mMaterial, materialQuantity, materialPrice, mSupplier, date, materialPrice * materialQuantity, mDescription );
                 }
 
                 else {
-                    m = new Material(mMaterial, materialQuantity, materialPrice, mSupplier, date, materialPrice * materialQuantity, "");
+                    m = new Material( mMaterial, materialQuantity, materialPrice, mSupplier, date, materialPrice * materialQuantity, "");
                 }
 
-                works.document(mWork).get().addOnCompleteListener(task -> {
+                Map<String, Integer> payment = new HashMap<>(  );
+                payment.put( "payment", 0 );
+
+                payments.document( mSupplier ).set( payment )
+                        .addOnSuccessListener( aVoid -> Toast.makeText( getContext(), "Success", Toast.LENGTH_SHORT ).show() )
+                        .addOnFailureListener( e -> Toast.makeText( getContext(), "Failed", Toast.LENGTH_SHORT ).show() );
+
+
+                works.document( mWork ).get().addOnCompleteListener( task -> {
                     if (task.isSuccessful()) {
                         DocumentSnapshot document = task.getResult();
+                        assert document != null;
                         if(document.exists()) {
                             Work w = document.toObject(Work.class);
+                            assert w != null;
                             materialsList = w.getMaterials();
                             materialsList.add(m);
                         }
@@ -145,9 +148,9 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
 
             try {
                 mWork = nameWork.getText().toString().toLowerCase();
-                Work w = new Work(mWork, materialsList);
+                Work w = new Work( mWork, materialsList);
                 
-                works.document(mWork).set(w)
+                works.document( mWork ).set(w)
                         .addOnSuccessListener(aVoid -> Log.d(TAG, "Success"))
                         .addOnFailureListener(e -> Log.d(TAG, "Failed"));
 
@@ -166,48 +169,28 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
 
     public void makeWorksList(){
         works.get()
-            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            allWorks.add(document.getId());
-                        }
-                    } else {
-                        Log.d(TAG, "Error getting documents: ", task.getException());
-                    }
+            .addOnCompleteListener( task -> {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : Objects.requireNonNull( task.getResult() ))
+                        allWorks.add( document.getId() );
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.getException());
                 }
-            });
+            } );
 
-        works.get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Work w = document.toObject(Work.class);
-                                List<Material> m = w.getMaterials();
-                                for (Material material : m){
-                                    if(!allSuppliers.contains(material.getNameSupplier()))
-                                        allSuppliers.add(material.getNameSupplier());
-                                }
-                            }
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
-                        }
+        payments.get()
+                .addOnCompleteListener( task -> {
+                    if (task.isSuccessful()){
+                        for (QueryDocumentSnapshot documentSnapshot : Objects.requireNonNull( task.getResult() ))
+                            allSuppliers.add( documentSnapshot.getId() );
                     }
-                });
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
+                } );
     }
 
     public void initViews(){
         datePicker = nestedScrollView.findViewById(R.id.datePicker);
-        btnAddMaterial = nestedScrollView.findViewById(R.id.btnAddMaterial);
-        btnSaveWorkData = nestedScrollView.findViewById(R.id.btnSaveWorkData);
+        MaterialButton btnAddMaterial = nestedScrollView.findViewById( R.id.btnAddMaterial );
+        MaterialButton btnSaveWorkData = nestedScrollView.findViewById( R.id.btnSaveWorkData );
         nameWork = nestedScrollView.findViewById(R.id.nameWork);
         nameMaterial = nestedScrollView.findViewById(R.id.nameMaterial);
         nameSupplier = nestedScrollView.findViewById(R.id.nameSupplier);
@@ -215,20 +198,6 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
         description = nestedScrollView.findViewById( R.id.description );
         price = nestedScrollView.findViewById(R.id.price);
         nestedScrollView = nestedScrollView.findViewById(R.id.nestedScrollView);
-
-        /*
-        linerLayout1 = nestedScrollView.findViewById(R.id.linerLayout);
-        linerLayout2 = nestedScrollView.findViewById(R.id.linerLayout2);
-        linerLayout3 = nestedScrollView.findViewById(R.id.linerLayout3);
-        */
-
-        /*
-        ti1 = nestedScrollView.findViewById(R.id.ti1);
-        ti2 = nestedScrollView.findViewById(R.id.ti2);
-        ti3 = nestedScrollView.findViewById(R.id.ti3);
-        ti4 = nestedScrollView.findViewById(R.id.ti4);
-        ti5 = nestedScrollView.findViewById(R.id.ti5);
-        */
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(nestedScrollView.getContext(), android.R.layout.simple_dropdown_item_1line, allWorks);
         nameWork.setAdapter(adapter);
@@ -242,8 +211,13 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
     }
 
     private void hideKeyboard(View v) {
-        InputMethodManager inputMethodManager = (InputMethodManager)getActivity().getSystemService( Context.INPUT_METHOD_SERVICE);
+        InputMethodManager inputMethodManager = (InputMethodManager) Objects.requireNonNull( getActivity() ).getSystemService( Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(v.getApplicationWindowToken(),0);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
     }
 
 }
