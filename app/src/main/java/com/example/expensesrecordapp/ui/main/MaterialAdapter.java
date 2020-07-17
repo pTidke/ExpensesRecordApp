@@ -9,11 +9,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.expensesrecordapp.R;
 import com.example.expensesrecordapp.model.Material;
-
 import java.util.List;
 
 public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.ViewHolder> {
+
     private List<Material> mList;
+    private static onClickListner onclicklistner;
 
     public MaterialAdapter(List<Material> mList) {
         this.mList = mList;
@@ -39,9 +40,46 @@ public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.ViewHo
         }
     }
 
-    @Override
-    public int getItemCount() {
-        return mList.size();
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
+        public TextView nameCardMaterial;
+        public TextView nameCardMaterialSupplier;
+        public TextView nameCardDate;
+        public TextView nameCardQuantity;
+        public TextView nameCardTotal;
+        public TextView getNameCardMaterialDescription;
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+            nameCardDate = itemView.findViewById(R.id.nameCardDate);
+            nameCardMaterial = itemView.findViewById(R.id.nameCardMaterial);
+            nameCardMaterialSupplier = itemView.findViewById(R.id.nameCardMaterialSupplier);
+            nameCardQuantity = itemView.findViewById(R.id.nameCardQuantity);
+            nameCardTotal = itemView.findViewById(R.id.nameCardTotal);
+            getNameCardMaterialDescription = itemView.findViewById( R.id.nameCardMaterialDescription );
+
+            itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            onclicklistner.onItemClick(getAdapterPosition(), v);
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            onclicklistner.onItemLongClick(getAdapterPosition(), v);
+            return true;
+        }
+    }
+
+    public void setOnItemClickListener(onClickListner onclicklistner) {
+        MaterialAdapter.onclicklistner = onclicklistner;
+    }
+
+    public interface onClickListner {
+        void onItemClick(int position, View v);
+        void onItemLongClick(int position, View v);
     }
 
     public static String toTitleCase(String str) {
@@ -72,21 +110,9 @@ public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.ViewHo
         return builder.toString();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView nameCardMaterial;
-        public TextView nameCardMaterialSupplier;
-        public TextView nameCardDate;
-        public TextView nameCardQuantity;
-        public TextView nameCardTotal;
-        public TextView getNameCardMaterialDescription;
-        public ViewHolder(View itemView) {
-            super(itemView);
-            nameCardDate = itemView.findViewById(R.id.nameCardDate);
-            nameCardMaterial = itemView.findViewById(R.id.nameCardMaterial);
-            nameCardMaterialSupplier = itemView.findViewById(R.id.nameCardMaterialSupplier);
-            nameCardQuantity = itemView.findViewById(R.id.nameCardQuantity);
-            nameCardTotal = itemView.findViewById(R.id.nameCardTotal);
-            getNameCardMaterialDescription = itemView.findViewById( R.id.nameCardMaterialDescription );
-        }
+    @Override
+    public int getItemCount() {
+        return mList.size();
     }
+
 }

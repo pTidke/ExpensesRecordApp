@@ -162,21 +162,18 @@ public class ThirdFrag extends Fragment {
                         }
                     }
                 });
+
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>( getContext(), list_view, lv ){
 
             @Override
             public View getView(int position, View convertView, ViewGroup parent){
-                /// Get the Item from ListView
                 View view = super.getView(position, convertView, parent);
-
-                // Set the border of View (ListView Item)
                 view.setBackground(getContext().getDrawable(R.drawable.border));
-
-                // Return the view
                 return view;
             }
 
         };
+
         arrayAdapter.notifyDataSetChanged();
         lvSuppliers.setClickable( false );
         lvSuppliers.setAdapter( arrayAdapter );

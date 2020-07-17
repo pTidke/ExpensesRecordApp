@@ -35,6 +35,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
@@ -95,9 +96,52 @@ public class SecondFrag extends Fragment {
             listView.setLayoutManager(new LinearLayoutManager(mBottomSheetDialog.getContext()));
             listView.setAdapter(materialAdapter);
 
+            List<Material> finalMList = mList;
+            materialAdapter.setOnItemClickListener( new MaterialAdapter.onClickListner() {
+                @Override
+                public void onItemClick(int position, View v) {
+
+                }
+
+                @Override
+                public void onItemLongClick(int position, View v) {
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    builder.setMessage("Do you want to Delete this Material ?").setTitle("Delete Alert!")
+                            .setCancelable(false)
+                            .setPositiveButton("Yes", (dialog, id) -> DeleteMaterial() )
+                            .setNegativeButton("No", (dialog, id) -> dialog.cancel() );
+
+                    AlertDialog alert = builder.create();
+                    alert.show();
+                }
+
+                private void DeleteMaterial() {
+
+                    try {
+                        if(finalMList.size() > 1){
+                            finalMList.remove( position );
+                            Work w = new Work(work.getNameWork(), finalMList);
+
+                            worksRef.document(work.getNameWork()).set(w)
+                                    .addOnSuccessListener(aVoid -> Log.d("TAG", "Success"))
+                                    .addOnFailureListener(e -> Log.d("TAG", "Failed"));
+                        }
+                        else {
+                            adapter.DeleteItem( position );
+                        }
+                        materialAdapter.notifyDataSetChanged();
+                        adapter.notifyDataSetChanged();
+                    }
+                    catch (Exception e){
+                        Toast.makeText(view.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+                }
+            } );
+
             delete.setOnClickListener( v -> {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-
                 builder.setMessage("Do you want to Delete this Work ?").setTitle("Delete Alert!")
                         .setCancelable(false)
                         .setPositiveButton("Yes", (dialog, id) -> adapter.DeleteItem( position ) )
