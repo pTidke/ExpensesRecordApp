@@ -31,7 +31,6 @@ public class SecondFrag extends Fragment {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference worksRef = db.collection("Works");
-    private CollectionReference payments = db.collection( "payments" );
 
     private WorkAdapter adapter;
     View view;
@@ -87,7 +86,7 @@ public class SecondFrag extends Fragment {
                 @Override
                 public void onItemLongClick(int position, View v) {
 
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    AlertDialog.Builder builder = new AlertDialog.Builder( Objects.requireNonNull( getContext() ) );
                     builder.setMessage("Do you want to Delete this Material ?").setTitle("Delete Alert!")
                             .setCancelable(false)
                             .setPositiveButton("Yes", (dialog, id) -> DeleteMaterial() )
@@ -178,5 +177,4 @@ public class SecondFrag extends Fragment {
 
         return builder.toString();
     }
-
 }

@@ -25,7 +25,6 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -124,7 +123,7 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
                                 s.put( "payment", 0 );
                                 s.put( "grandTotal", materialPrice * materialQuantity );
                                 payments.document( mSupplier ).set(s);
-                                payments.document( mSupplier ).collection( "materials" ).add( m );
+                                payments.document( mSupplier ).collection( "materials" ).document(mMaterial).set( m );
                             }
                         } else {
                             Log.d(TAG, "Failed with: ", task.getException());
@@ -206,6 +205,8 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
                     if (task.isSuccessful()){
                         for (QueryDocumentSnapshot documentSnapshot : Objects.requireNonNull( task.getResult() ))
                             allSuppliers.add( documentSnapshot.getId() );
+                    } else {
+                        Log.d(TAG, "Error getting documents: ", task.getException());
                     }
                 } );
     }
