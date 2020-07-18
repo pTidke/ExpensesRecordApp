@@ -12,16 +12,20 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 
 import com.example.expensesrecordapp.model.Material;
 import com.example.expensesrecordapp.model.Work;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -101,13 +105,32 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
                     m = new Material( mMaterial, materialQuantity, materialPrice, mSupplier, date, materialPrice * materialQuantity, "");
                 }
 
-                Map<String, Integer> payment = new HashMap<>(  );
-                payment.put( "payment", 0 );
-
-                payments.document( mSupplier ).set( payment )
-                        .addOnSuccessListener( aVoid -> Toast.makeText( getContext(), "Success", Toast.LENGTH_SHORT ).show() )
-                        .addOnFailureListener( e -> Toast.makeText( getContext(), "Failed", Toast.LENGTH_SHORT ).show() );
-
+                payments.document(mSupplier).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot document = task.getResult();
+                            if (document.exists()) {
+                                Log.d(TAG, "Document exists!");
+                                payments.document( mSupplier ).collection( "materials" ).add( m );
+                                if (document.getData().get( "grandTotal" ).toString() != null){
+                                    payments.document( mSupplier )
+                                            .update( "grandTotal",
+                                                     materialPrice * materialQuantity + Float.parseFloat( document.getData().get( "grandTotal" ).toString() ) );
+                                }
+                            } else {
+                                Log.d(TAG, "Document does not exist!");
+                                Map<String, Object> s = new HashMap<>(  );
+                                s.put( "payment", 0 );
+                                s.put( "grandTotal", materialPrice * materialQuantity );
+                                payments.document( mSupplier ).set(s);
+                                payments.document( mSupplier ).collection( "materials" ).add( m );
+                            }
+                        } else {
+                            Log.d(TAG, "Failed with: ", task.getException());
+                        }
+                    }
+                });
 
                 works.document( mWork ).get().addOnCompleteListener( task -> {
                     if (task.isSuccessful()) {
@@ -139,7 +162,7 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
 
             }
             catch (Exception e){
-                Toast.makeText(view.getContext(), "Enter Data Properly", Toast.LENGTH_SHORT).show();
+                Toast.makeText(view.getContext(), "Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
 
         }

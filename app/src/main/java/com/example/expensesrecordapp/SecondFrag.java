@@ -1,56 +1,37 @@
 package com.example.expensesrecordapp;
 
-import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.expensesrecordapp.model.Material;
 import com.example.expensesrecordapp.model.Work;
 import com.example.expensesrecordapp.ui.main.MaterialAdapter;
 import com.example.expensesrecordapp.ui.main.WorkAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
+import java.util.Objects;
 
 public class SecondFrag extends Fragment {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference worksRef = db.collection("Works");
+    private CollectionReference payments = db.collection( "payments" );
 
     private WorkAdapter adapter;
     View view;
@@ -79,24 +60,24 @@ public class SecondFrag extends Fragment {
 
         adapter.setOnItemClickListener((documentSnapshot, position) -> {
             Work work = documentSnapshot.toObject(Work.class);
-            List<Material> mList = null;
-            if (work != null) {
-                mList = work.getMaterials();
-            }
-            BottomSheetDialog mBottomSheetDialog = new BottomSheetDialog(getContext());
-            View dialogView = getActivity().getLayoutInflater().inflate(R.layout.dialog_bottom_sheet, null);
+            List<Material> mList = Objects.requireNonNull( work ).getMaterials();
+
+            BottomSheetDialog mBottomSheetDialog = new BottomSheetDialog( Objects.requireNonNull( getContext() ) );
+            View dialogView = Objects.requireNonNull( getActivity() ).getLayoutInflater().inflate(R.layout.dialog_bottom_sheet, null);
+
             TextView tv = dialogView.findViewById(R.id.tv);
             MaterialButton delete = dialogView.findViewById( R.id.deleteMaterial );
-            tv.setText(toTitleCase(work.getNameWork()));
             TextView gt = dialogView.findViewById(R.id.grandTotal);
-            gt.setText("Grand Total : " + Float.toString(work.getGrandTotal()));
             RecyclerView listView = dialogView.findViewById(R.id.list);
+
+            tv.setText(toTitleCase(work.getNameWork()));
+            gt.setText("Grand Total : " + Float.toString(work.getGrandTotal()));
+
             MaterialAdapter materialAdapter = new MaterialAdapter(mList);
             listView.setHasFixedSize(true);
             listView.setLayoutManager(new LinearLayoutManager(mBottomSheetDialog.getContext()));
             listView.setAdapter(materialAdapter);
 
-            List<Material> finalMList = mList;
             materialAdapter.setOnItemClickListener( new MaterialAdapter.onClickListner() {
                 @Override
                 public void onItemClick(int position, View v) {
@@ -119,9 +100,9 @@ public class SecondFrag extends Fragment {
                 private void DeleteMaterial() {
 
                     try {
-                        if(finalMList.size() > 1){
-                            finalMList.remove( position );
-                            Work w = new Work(work.getNameWork(), finalMList);
+                        if(mList.size() > 1){
+                            mList.remove( position );
+                            Work w = new Work(work.getNameWork(), mList );
 
                             worksRef.document(work.getNameWork()).set(w)
                                     .addOnSuccessListener(aVoid -> Log.d("TAG", "Success"))
@@ -138,6 +119,7 @@ public class SecondFrag extends Fragment {
                     }
 
                 }
+
             } );
 
             delete.setOnClickListener( v -> {
@@ -155,6 +137,18 @@ public class SecondFrag extends Fragment {
             mBottomSheetDialog.show();
         });
 
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        adapter.startListening();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        adapter.stopListening();
     }
 
     public static String toTitleCase(String str) {
@@ -185,15 +179,4 @@ public class SecondFrag extends Fragment {
         return builder.toString();
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        adapter.startListening();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        adapter.stopListening();
-    }
 }
