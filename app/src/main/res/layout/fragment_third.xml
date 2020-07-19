@@ -5,12 +5,12 @@
     android:layout_height="match_parent"
     tools:context=".ThirdFrag">
 
-    <ListView
-        android:id="@+id/LvSuppliers"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/suppliersRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="@dimen/dimen_common_medium"
-        android:dividerHeight="8.0dp"
-        android:divider="@null"/>
+        android:layout_margin="8dp"
+        android:paddingStart="@dimen/zero_margin_when_normal"
+        android:paddingEnd="@dimen/zero_margin_when_normal" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

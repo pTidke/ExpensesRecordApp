@@ -4,20 +4,26 @@ public class Supplier {
 
     private float grandTotal;
     private float payment;
+    private String nameSupplier;
 
-    private Supplier() {
+    public Supplier() {
     }
 
-    private Supplier(float grandTotal, float payment){
+    public Supplier(float grandTotal, float payment, String nameSupplier){
         this.grandTotal = grandTotal;
         this.payment = payment;
+        this.nameSupplier = nameSupplier;
     }
 
-    private float getGrandTotal(){
+    public float getGrandTotal(){
         return grandTotal;
     }
 
-    private float getPayment(){
+    public String getNameSupplier(){
+        return nameSupplier;
+    }
+
+    public float getPayment(){
         return payment;
     }
 

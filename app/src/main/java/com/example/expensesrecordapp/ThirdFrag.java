@@ -1,183 +1,141 @@
 package com.example.expensesrecordapp;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.expensesrecordapp.model.Material;
-import com.example.expensesrecordapp.model.Work;
+import com.example.expensesrecordapp.model.Supplier;
+import com.example.expensesrecordapp.ui.main.MatAdapter;
 import com.example.expensesrecordapp.ui.main.SupplierAdapter;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Query;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static android.content.Context.INPUT_METHOD_SERVICE;
-import static androidx.core.content.ContextCompat.getSystemService;
-import static com.example.expensesrecordapp.R.layout.list_view;
+import java.util.Objects;
 
 public class ThirdFrag extends Fragment {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private CollectionReference worksRef = db.collection("Works");
+    private CollectionReference paymentsRef = db.collection("payments");
 
-    private List<Material> materialsList = new ArrayList<>();
-    private SupplierAdapter adapter1;
-    private List<String> lv = new ArrayList<>();
-    private CollectionReference works = db.collection("Works");
-    ListView lvSuppliers;
-    SharedPreferences sharedpreferences;
-
+    private SupplierAdapter adapter;
+    private MatAdapter adapter1;
+    
     View view;
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_third, container, false);
-        lvSuppliers = view.findViewById( R.id.LvSuppliers );
-        sharedpreferences = view.getContext().getSharedPreferences( "payments", Context.MODE_PRIVATE );
-        setList();
-
-        lvSuppliers.setOnItemClickListener( new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String nameS = parent.getItemAtPosition( position ).toString();
-                SharedPreferences.Editor editor = sharedpreferences.edit();
-                BottomSheetDialog mBottomSheetDialog = new BottomSheetDialog(parent.getContext());
-                View dialogView = getActivity().getLayoutInflater().inflate(R.layout.bottom_dailog, null);
-                RecyclerView suppliersRecyclerView = dialogView.findViewById(R.id.list1);
-                TextView tv = dialogView.findViewById(R.id.tv1);
-                tv.setText(toTitleCase( nameS ));
-                TextView tvPaidTotal = dialogView.findViewById( R.id.paidTotal );
-                TextView gt = dialogView.findViewById(R.id.grandTotal1);
-                TextInputEditText paidAmount = dialogView.findViewById( R.id.paidAmount );
-                MaterialButton pay = dialogView.findViewById( R.id.addPayment );
-                tvPaidTotal.setText( "Paid Amount : "  + sharedpreferences.getFloat( nameS, 0 ));
-                pay.setOnClickListener( new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        try {
-
-                            if(Float.valueOf( paidAmount.getText().toString() ) != 0.0) {
-                                tvPaidTotal.setText( "Paid Amount : " + paidAmount.getText().toString() );
-                                editor.putFloat( nameS, Float.valueOf( paidAmount.getText().toString() ) );
-                                editor.commit();
-                                Toast.makeText( dialogView.getContext(), "Payment Updated", Toast.LENGTH_SHORT ).show();
-                                hideKeyboard( v );
-                            }
-                            else {
-                                Toast.makeText( dialogView.getContext(), "Enter amount higher than 0!", Toast.LENGTH_SHORT ).show();
-                            }
-
-                            paidAmount.setText( "" );
-
-                        }
-                        catch (Exception e){
-                            Toast.makeText( dialogView.getContext(), e.getMessage(), Toast.LENGTH_SHORT ).show();
-                        }
-                    }
-                } );
-                materialsList.clear();
-
-                worksRef.get().addOnCompleteListener( new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if(task.isSuccessful()){
-                            float sum = 0;
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Work w = document.toObject(Work.class);
-                                List<Material> m = w.getMaterials();
-                                for (Material material : m){
-                                    if(material.getNameSupplier().equals( nameS )){
-                                        Log.d( "TAG", "onComplete: " + material.getNameMaterial() );
-                                        materialsList.add( material );
-                                        sum = sum + material.getCostTotal();
-                                        adapter1.notifyDataSetChanged();
-                                    }
-                                    gt.setText("Grand Total : " + sum);
-                                }
-
-                            }
-                        } else {
-                            Log.d("TAG", "Error getting documents: ", task.getException());
-                        }
-                    }
-                } );
-
-                adapter1 = new SupplierAdapter( materialsList );
-                suppliersRecyclerView.setLayoutManager(new LinearLayoutManager(mBottomSheetDialog.getContext()));
-                suppliersRecyclerView.setAdapter(adapter1);
-
-                mBottomSheetDialog.setContentView(dialogView);
-                mBottomSheetDialog.show();
-                materialsList.clear();
-            }
-        } );
-
+        setUpRecyclerView();
         return view;
     }
 
-    private void setList() {
+    private void setUpRecyclerView() {
+        Query query = paymentsRef;
 
-        works.get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        FirestoreRecyclerOptions<Supplier> options = new FirestoreRecyclerOptions.Builder<Supplier>()
+                .setQuery( query, Supplier.class )
+                .build();
+
+        adapter = new SupplierAdapter(options);
+
+        RecyclerView suppliersRecyclerView = view.findViewById(R.id.suppliersRecyclerView);
+        suppliersRecyclerView.setHasFixedSize(true);
+        suppliersRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        suppliersRecyclerView.setAdapter(adapter);
+
+        adapter.setOnItemClickListener( new SupplierAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(String nameSupplier, double payment, double grandTotal, int position) {
+
+                BottomSheetDialog mBottomSheetDialog = new BottomSheetDialog( Objects.requireNonNull( getContext() ) );
+                View dialogView = Objects.requireNonNull( getActivity() ).getLayoutInflater().inflate(R.layout.bottom_dailog, null);
+
+                TextView tv = dialogView.findViewById(R.id.tv1);
+                tv.setText(toTitleCase( nameSupplier ));
+                TextView tvPaidTotal = dialogView.findViewById( R.id.paidTotal );
+                TextView gt = dialogView.findViewById(R.id.grandTotal1);
+
+                TextInputEditText paidAmount = dialogView.findViewById( R.id.paidAmount );
+                MaterialButton pay = dialogView.findViewById( R.id.addPayment );
+
+                tvPaidTotal.setText( "Paid Amount : "  + payment);
+                gt.setText("Grand Total : " + grandTotal);
+
+                Query query1 = paymentsRef.document( nameSupplier ).collection( "materials" );
+
+                FirestoreRecyclerOptions<Material> options1 = new FirestoreRecyclerOptions.Builder<Material>()
+                        .setQuery(query1, Material.class)
+                        .build();
+
+                adapter1 = new MatAdapter(options1);
+                adapter1.startListening();
+                RecyclerView suppliers1RecyclerView = dialogView.findViewById(R.id.list1);
+                suppliers1RecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+                suppliers1RecyclerView.setAdapter(adapter1);
+
+                adapter1.setOnItemClickListener( new MatAdapter.onClickListner() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Work w = document.toObject(Work.class);
-                                List<Material> m = w.getMaterials();
-                                for (Material material : m){
-                                    if(!lv.contains(material.getNameSupplier()))
-                                        lv.add(material.getNameSupplier());
-                                }
-                            }
-                        } else {
-                            Log.d("TAG", "Error getting documents: ", task.getException());
+                    public void onItemClick(int position, View v) {
+                    }
+                    @Override
+                    public void onItemLongClick(int position, View v) {
+                    }
+                } );
+
+                pay.setOnClickListener( v -> {
+                    try {
+                        if(Double.valueOf( paidAmount.getText().toString() ) > 0){
+                            paymentsRef.document(nameSupplier).update( "payment", FieldValue.increment( Double.parseDouble( Objects.requireNonNull( paidAmount.getText() ).toString())));
+                            paidAmount.setText( "" );
+                            mBottomSheetDialog.dismiss();
+                            hideKeyboard( v );
+                            Snackbar.make( Objects.requireNonNull( getView() ), "Payment Added Successfully!", Snackbar.LENGTH_LONG ).show();
                         }
                     }
-                });
+                    catch (Exception e){
+                        Toast.makeText( getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT ).show();
+                    }
+                } );
 
-        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>( getContext(), list_view, lv ){
-
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent){
-                View view = super.getView(position, convertView, parent);
-                view.setBackground(getContext().getDrawable(R.drawable.border));
-                return view;
+                mBottomSheetDialog.setContentView(dialogView);
+                mBottomSheetDialog.show();
             }
 
-        };
+            @Override
+            public void onItemLongClick(int position, View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder( Objects.requireNonNull( getContext() ) );
+                builder.setMessage("Do you want to Delete this Supplier ?").setTitle("Delete Alert!")
+                        .setCancelable(true)
+                        .setPositiveButton("Yes", (dialog, id) -> deleteSup(position) )
+                        .setNegativeButton("No", (dialog, id) -> dialog.cancel() );
 
-        arrayAdapter.notifyDataSetChanged();
-        lvSuppliers.setClickable( false );
-        lvSuppliers.setAdapter( arrayAdapter );
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
 
+            private void deleteSup(int position) {
+                adapter.DeleteItem( position );
+                Snackbar.make( Objects.requireNonNull( getView() ), "Supplier Deleted Successfully!", Snackbar.LENGTH_LONG ).show();
+            }
+        } );
     }
 
     public static String toTitleCase(String str) {
@@ -209,14 +167,20 @@ public class ThirdFrag extends Fragment {
     }
 
     private void hideKeyboard(View v) {
-        InputMethodManager inputMethodManager = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager inputMethodManager = (InputMethodManager) Objects.requireNonNull( getActivity() ).getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(v.getApplicationWindowToken(),0);
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        setList();
+    public void onStart() {
+        super.onStart();
+        adapter.startListening();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        adapter.stopListening();
     }
 
 }

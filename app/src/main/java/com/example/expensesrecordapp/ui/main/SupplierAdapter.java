@@ -5,62 +5,79 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.expensesrecordapp.R;
-import com.example.expensesrecordapp.model.Material;
+import com.example.expensesrecordapp.model.Supplier;
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
-import java.util.List;
+public class SupplierAdapter extends FirestoreRecyclerAdapter<Supplier, SupplierAdapter.SupplierHolder> {
 
-public class SupplierAdapter extends RecyclerView.Adapter<SupplierAdapter.SupplierHolder> {
+    private SupplierAdapter.OnItemClickListener listener;
 
-    private List<Material> mList;
-
-    public SupplierAdapter(List<Material> mList) {
-            this.mList = mList;
+    public SupplierAdapter(@NonNull FirestoreRecyclerOptions<Supplier> options) {
+        super(options);
     }
 
     @Override
-    public SupplierHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View listItem = layoutInflater.inflate(R.layout.supplier_item, parent, false);
-        return new SupplierHolder(listItem);
+    protected void onBindViewHolder(@NonNull SupplierAdapter.SupplierHolder supplierHolder, int i, @NonNull Supplier supplier) {
+        supplierHolder.nameSupplier.setText(toTitleCase(supplier.getNameSupplier()));
+        supplierHolder.grandTotal.setText("Total Bill : " + supplier.getGrandTotal());
+        supplierHolder.paid.setText( "Paid Amount : " + supplier.getPayment() );
     }
 
+    @NonNull
     @Override
-    public void onBindViewHolder(SupplierHolder supplierHolder, int position) {
-        final Material material = mList.get(position);
-        supplierHolder.nameCardMaterial.setText(toTitleCase(material.getNameMaterial()));
-        supplierHolder.nameCardDate.setText("Date : " + material.getDate());
-        supplierHolder.nameCardQuantity.setText("Quantity : " + Integer.toString(material.getQuantity()));
-        supplierHolder.nameCardTotal.setText("Total Price : " + Float.toString(material.getCostTotal()));
-        if (!material.getDescription().isEmpty()){
-            supplierHolder.nameCardDesc.setText("Description : "  + material.getDescription());
-        }
+    public SupplierAdapter.SupplierHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.suppliers, parent, false);
+        return new SupplierAdapter.SupplierHolder(v);
     }
 
-    @Override
-    public int getItemCount() {
-        return mList.size();
+    public void DeleteItem(int position){
+        getSnapshots().getSnapshot( position ).getReference().delete();
     }
 
+    class SupplierHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener{
 
-    public static class SupplierHolder extends RecyclerView.ViewHolder{
+        TextView nameSupplier;
+        TextView grandTotal;
+        TextView paid;
 
-        public TextView nameCardMaterial;
-        public TextView nameCardDate;
-        public TextView nameCardQuantity;
-        public TextView nameCardTotal;
-        public TextView nameCardDesc;
-
-        public SupplierHolder(View itemView) {
+        public SupplierHolder(@NonNull View itemView) {
             super(itemView);
-            nameCardDate = itemView.findViewById(R.id.nameCardDate1);
-            nameCardMaterial = itemView.findViewById(R.id.nameCardMaterial1);
-            nameCardQuantity = itemView.findViewById(R.id.nameCardQuantity1);
-            nameCardTotal = itemView.findViewById(R.id.nameCardTotal1);
-            nameCardDesc = itemView.findViewById( R.id.nameCardDesc1 );
+            nameSupplier = itemView.findViewById(R.id.nameCardSupplier);
+            grandTotal = itemView.findViewById(R.id.sMaterials);
+            paid = itemView.findViewById( R.id.paid );
+
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION && listener != null){
+                    listener.onItemClick(
+                            getSnapshots().getSnapshot(position).get( "nameSupplier" ).toString(),
+                            Double.parseDouble( getSnapshots().getSnapshot(position).get( "payment" ).toString() ),
+                            Double.parseDouble( getSnapshots().getSnapshot(position).get( "grandTotal" ).toString() ),
+                            position);
+                }
+            });
+            itemView.setOnLongClickListener(this);
         }
+
+        @Override
+        public boolean onLongClick(View v) {
+            listener.onItemLongClick(getAdapterPosition(), v);
+            return true;
+        }
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(String nameSupplier, double payment, double grandTotal, int position);
+        void onItemLongClick(int position, View v);
+    }
+
+    public void setOnItemClickListener(SupplierAdapter.OnItemClickListener listener){
+        this.listener = listener;
     }
 
     public static String toTitleCase(String str) {
@@ -90,6 +107,5 @@ public class SupplierAdapter extends RecyclerView.Adapter<SupplierAdapter.Suppli
 
         return builder.toString();
     }
-
 
 }

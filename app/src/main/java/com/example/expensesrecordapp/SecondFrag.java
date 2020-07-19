@@ -112,6 +112,7 @@ public class SecondFrag extends Fragment {
                         }
                         materialAdapter.notifyDataSetChanged();
                         adapter.notifyDataSetChanged();
+                        mBottomSheetDialog.dismiss();
                     }
                     catch (Exception e){
                         Toast.makeText(view.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -130,6 +131,7 @@ public class SecondFrag extends Fragment {
 
                 AlertDialog alert = builder.create();
                 alert.show();
+                mBottomSheetDialog.dismiss();
             } );
 
             mBottomSheetDialog.setContentView(dialogView);
