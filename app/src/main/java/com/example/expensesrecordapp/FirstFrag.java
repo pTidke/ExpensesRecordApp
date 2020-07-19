@@ -72,6 +72,8 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View view) {
 
+        String mWork;
+
         if (view.getId() == R.id.datePicker){
             DatePickerDialog datePickerDialog = new DatePickerDialog(Objects.requireNonNull(getContext()), (view1, year, monthOfYear, dayOfMonth) -> {
                 calendar.set(Calendar.YEAR, year);
@@ -83,7 +85,6 @@ public class FirstFrag extends Fragment implements View.OnClickListener {
             datePickerDialog.show();
         }
 
-        String mWork;
         if(view.getId() == R.id.btnAddMaterial) {
 
             try {

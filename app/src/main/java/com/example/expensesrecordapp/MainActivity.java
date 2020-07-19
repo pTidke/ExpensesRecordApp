@@ -8,7 +8,6 @@ import androidx.viewpager.widget.ViewPager;
 import com.example.expensesrecordapp.ui.main.SectionsPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
 
-
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -21,5 +20,4 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabs = findViewById(R.id.tabs);
         tabs.setupWithViewPager(viewPager);
     }
-
 }

@@ -39,7 +39,7 @@ public class WorkAdapter extends FirestoreRecyclerAdapter<Work, WorkAdapter.Work
         getSnapshots().getSnapshot( position ).getReference().delete();
     }
 
-    class WorkHolder extends RecyclerView.ViewHolder{
+    class WorkHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener{
 
         TextView nameWork;
         TextView totalMaterials;
@@ -55,11 +55,20 @@ public class WorkAdapter extends FirestoreRecyclerAdapter<Work, WorkAdapter.Work
                     listener.onItemClick(getSnapshots().getSnapshot(position), position);
                 }
             });
+
+            itemView.setOnLongClickListener(this);
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            listener.onItemLongClick(getAdapterPosition(), v);
+            return true;
         }
     }
 
     public interface OnItemClickListener {
         void onItemClick(DocumentSnapshot documentSnapshot, int position);
+        void onItemLongClick(int position, View v);
     }
 
     public void setOnItemClickListener(OnItemClickListener listener){

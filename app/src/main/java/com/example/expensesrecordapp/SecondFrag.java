@@ -21,6 +21,7 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
@@ -57,86 +58,88 @@ public class SecondFrag extends Fragment {
         worksRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
         worksRecyclerView.setAdapter(adapter);
 
-        adapter.setOnItemClickListener((documentSnapshot, position) -> {
-            Work work = documentSnapshot.toObject(Work.class);
-            List<Material> mList = Objects.requireNonNull( work ).getMaterials();
+        adapter.setOnItemClickListener( new WorkAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(DocumentSnapshot documentSnapshot, int position) {
+                Work work = documentSnapshot.toObject(Work.class);
+                List<Material> mList = Objects.requireNonNull( work ).getMaterials();
 
-            BottomSheetDialog mBottomSheetDialog = new BottomSheetDialog( Objects.requireNonNull( getContext() ) );
-            View dialogView = Objects.requireNonNull( getActivity() ).getLayoutInflater().inflate(R.layout.dialog_bottom_sheet, null);
+                BottomSheetDialog mBottomSheetDialog = new BottomSheetDialog( Objects.requireNonNull( getContext() ) );
+                View dialogView = Objects.requireNonNull( getActivity() ).getLayoutInflater().inflate(R.layout.dialog_bottom_sheet, null);
 
-            TextView tv = dialogView.findViewById(R.id.tv);
-            MaterialButton delete = dialogView.findViewById( R.id.deleteMaterial );
-            TextView gt = dialogView.findViewById(R.id.grandTotal);
-            RecyclerView listView = dialogView.findViewById(R.id.list);
+                TextView tv = dialogView.findViewById(R.id.tv);
+                TextView gt = dialogView.findViewById(R.id.grandTotal);
+                RecyclerView listView = dialogView.findViewById(R.id.list);
 
-            tv.setText(toTitleCase(work.getNameWork()));
-            gt.setText("Grand Total : " + Float.toString(work.getGrandTotal()));
+                tv.setText(toTitleCase(work.getNameWork()));
+                gt.setText("Grand Total : " + Float.toString(work.getGrandTotal()));
 
-            MaterialAdapter materialAdapter = new MaterialAdapter(mList);
-            listView.setHasFixedSize(true);
-            listView.setLayoutManager(new LinearLayoutManager(mBottomSheetDialog.getContext()));
-            listView.setAdapter(materialAdapter);
+                MaterialAdapter materialAdapter = new MaterialAdapter(mList);
+                listView.setHasFixedSize(true);
+                listView.setLayoutManager(new LinearLayoutManager(mBottomSheetDialog.getContext()));
+                listView.setAdapter(materialAdapter);
 
-            materialAdapter.setOnItemClickListener( new MaterialAdapter.onClickListner() {
-                @Override
-                public void onItemClick(int position, View v) {
+                materialAdapter.setOnItemClickListener( new MaterialAdapter.onClickListner() {
+                    @Override
+                    public void onItemClick(int position, View v) {
 
-                }
-
-                @Override
-                public void onItemLongClick(int position, View v) {
-
-                    AlertDialog.Builder builder = new AlertDialog.Builder( Objects.requireNonNull( getContext() ) );
-                    builder.setMessage("Do you want to Delete this Material ?").setTitle("Delete Alert!")
-                            .setCancelable(false)
-                            .setPositiveButton("Yes", (dialog, id) -> DeleteMaterial() )
-                            .setNegativeButton("No", (dialog, id) -> dialog.cancel() );
-
-                    AlertDialog alert = builder.create();
-                    alert.show();
-                }
-
-                private void DeleteMaterial() {
-
-                    try {
-                        if(mList.size() > 1){
-                            mList.remove( position );
-                            Work w = new Work(work.getNameWork(), mList );
-
-                            worksRef.document(work.getNameWork()).set(w)
-                                    .addOnSuccessListener(aVoid -> Log.d("TAG", "Success"))
-                                    .addOnFailureListener(e -> Log.d("TAG", "Failed"));
-                        }
-                        else {
-                            adapter.DeleteItem( position );
-                        }
-                        materialAdapter.notifyDataSetChanged();
-                        adapter.notifyDataSetChanged();
-                        mBottomSheetDialog.dismiss();
-                    }
-                    catch (Exception e){
-                        Toast.makeText(view.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
 
-                }
+                    @Override
+                    public void onItemLongClick(int position, View v) {
 
-            } );
+                        AlertDialog.Builder builder = new AlertDialog.Builder( Objects.requireNonNull( getContext() ) );
+                        builder.setMessage("Do you want to Delete this Material ?").setTitle("Delete Alert!")
+                                .setCancelable(true)
+                                .setPositiveButton("Yes", (dialog, id) -> DeleteMaterial() )
+                                .setNegativeButton("No", (dialog, id) -> dialog.cancel() );
 
-            delete.setOnClickListener( v -> {
+                        AlertDialog alert = builder.create();
+                        alert.show();
+                    }
+
+                    private void DeleteMaterial() {
+
+                        try {
+                            if(mList.size() > 1){
+                                mList.remove( position );
+                                Work w = new Work(work.getNameWork(), mList );
+
+                                worksRef.document(work.getNameWork()).set(w)
+                                        .addOnSuccessListener(aVoid -> Log.d("TAG", "Success"))
+                                        .addOnFailureListener(e -> Log.d("TAG", "Failed"));
+                            }
+                            else {
+                                adapter.DeleteItem( position );
+                            }
+                            materialAdapter.notifyDataSetChanged();
+                            adapter.notifyDataSetChanged();
+                            mBottomSheetDialog.dismiss();
+                        }
+                        catch (Exception e){
+                            Toast.makeText(view.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+
+                } );
+
+                mBottomSheetDialog.setContentView(dialogView);
+                mBottomSheetDialog.show();
+            }
+
+            @Override
+            public void onItemLongClick(int position, View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 builder.setMessage("Do you want to Delete this Work ?").setTitle("Delete Alert!")
-                        .setCancelable(false)
+                        .setCancelable(true)
                         .setPositiveButton("Yes", (dialog, id) -> adapter.DeleteItem( position ) )
                         .setNegativeButton("No", (dialog, id) -> dialog.cancel() );
 
                 AlertDialog alert = builder.create();
                 alert.show();
-                mBottomSheetDialog.dismiss();
-            } );
-
-            mBottomSheetDialog.setContentView(dialogView);
-            mBottomSheetDialog.show();
-        });
+            }
+        } );
 
     }
 
