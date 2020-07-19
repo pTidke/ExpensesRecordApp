@@ -63,7 +63,7 @@ public class ThirdFrag extends Fragment {
 
         adapter.setOnItemClickListener( new SupplierAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(String nameSupplier, double payment, double grandTotal, int position) {
+            public void onItemClick(String nameSupplier, float payment, float grandTotal, int position) {
 
                 BottomSheetDialog mBottomSheetDialog = new BottomSheetDialog( Objects.requireNonNull( getContext() ) );
                 View dialogView = Objects.requireNonNull( getActivity() ).getLayoutInflater().inflate(R.layout.bottom_dailog, null);
@@ -102,13 +102,11 @@ public class ThirdFrag extends Fragment {
 
                 pay.setOnClickListener( v -> {
                     try {
-                        if(Double.valueOf( paidAmount.getText().toString() ) > 0){
-                            paymentsRef.document(nameSupplier).update( "payment", FieldValue.increment( Double.parseDouble( Objects.requireNonNull( paidAmount.getText() ).toString())));
-                            paidAmount.setText( "" );
-                            mBottomSheetDialog.dismiss();
-                            hideKeyboard( v );
-                            Snackbar.make( Objects.requireNonNull( getView() ), "Payment Added Successfully!", Snackbar.LENGTH_LONG ).show();
-                        }
+                        paymentsRef.document(nameSupplier).update( "payment", FieldValue.increment( Float.parseFloat( Objects.requireNonNull( paidAmount.getText() ).toString())));
+                        paidAmount.setText( "" );
+                        mBottomSheetDialog.dismiss();
+                        hideKeyboard( v );
+                        Snackbar.make( Objects.requireNonNull( getView() ), "Payment Added Successfully!", Snackbar.LENGTH_LONG ).show();
                     }
                     catch (Exception e){
                         Toast.makeText( getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT ).show();

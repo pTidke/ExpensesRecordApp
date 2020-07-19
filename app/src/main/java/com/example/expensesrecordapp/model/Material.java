@@ -1,7 +1,5 @@
 package com.example.expensesrecordapp.model;
 
-import java.util.Iterator;
-
 public class Material{
 
     private String nameMaterial;

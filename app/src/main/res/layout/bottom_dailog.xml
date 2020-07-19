@@ -92,7 +92,6 @@
 
         </LinearLayout>
 
-
     </RelativeLayout>
 
 </androidx.core.widget.NestedScrollView>
